@@ -13,13 +13,36 @@ class RemoteBloc {
   //define the controller for the state to UI
   final stateController = StreamController<RemoteState>();
 
+  bool checkMute() {
+    if (state.volume >= 0) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+  bool isNegative() {
+    if (state.volume < 0) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   //listen to the event from the UI
   RemoteBloc() {
     eventController.stream.listen((RemoteEvent event) {
       if (event is IncrementEvent) {
-        state = RemoteState(state.volumn + event.increment);
+        state = RemoteState(state.volume + event.increment);
       } else if (event is DecrementEvent) {
-        state = RemoteState(state.volumn - event.decrement);
+        if (!checkMute()) {
+          state = RemoteState(state.volume - event.decrement);
+          if (isNegative()) {
+            state = RemoteState(0);
+          }
+        } else {
+          state = RemoteState(state.volume);
+        }
       } else if (event is MuteEvent) {
         state = RemoteState(0);
       }

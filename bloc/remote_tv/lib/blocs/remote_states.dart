@@ -1,4 +1,4 @@
 class RemoteState {
-  final int volumn;
-  RemoteState(this.volumn);
+  final int volume;
+  RemoteState(this.volume);
 }

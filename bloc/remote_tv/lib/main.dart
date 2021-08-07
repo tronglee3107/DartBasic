@@ -1,23 +1,64 @@
 import 'blocs/remote.dart';
 
-void main() async {
-  //define a bloc object
+import 'package:flutter/material.dart';
+import 'dart:async';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
   final bloc = RemoteBloc();
-  print('this is the initial time: ${bloc.state.volumn}');
-  //listen to the state to UI
-  bloc.stateController.stream.listen((RemoteState state) {
-    print('this is the curent volumn: ${bloc.state.volumn}');
-  });
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Flutter Bloc Remote TV'),
+        ),
+        body: Center(
+          child: StreamBuilder<RemoteState>(
+            stream: bloc.stateController.stream,
+            initialData: bloc.state,
+            builder:
+                (BuildContext context, AsyncSnapshot<RemoteState> snapshot) {
+              return Text(
+                  'Âm lượng hiện tại: ${snapshot.data.volume}'); // update UI <=== new
+            },
+          ),
+        ),
+        floatingActionButton: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: <Widget>[
+            FloatingActionButton(
+              onPressed: () =>
+                  bloc.eventController.sink.add(IncrementEvent(30)),
+              child: Icon(Icons.volume_up),
+            ),
+            FloatingActionButton(
+              onPressed: () =>
+                  bloc.eventController.sink.add(DecrementEvent(30)),
+              child: Icon(Icons.volume_down),
+            ),
+            FloatingActionButton(
+              onPressed: () => bloc.eventController.sink.add(MuteEvent()),
+              child: Icon(Icons.volume_mute),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-  // after 3s increase the volumn
-  await Future.delayed(Duration(seconds: 3));
-  bloc.eventController.sink.add(IncrementEvent(30));
-
-  //after 5s decrease the volumn
-  await Future.delayed(Duration(seconds: 5));
-  bloc.eventController.sink.add(DecrementEvent(20));
-
-  //after 5s mute
-  await Future.delayed(Duration(seconds: 5));
-  bloc.eventController.sink.add(MuteEvent());
+  @override
+  void dispose() {
+    super.dispose();
+    bloc.dispose(); // dispose bloc <=== new
+  }
 }
